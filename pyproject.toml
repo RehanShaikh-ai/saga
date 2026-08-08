@@ -1,0 +1,5 @@
+[project]
+name = "saga"
+version = "0.1.0"
+description = "Verification-first autonomous coding agent"
+requires-python = ">=3.11"
