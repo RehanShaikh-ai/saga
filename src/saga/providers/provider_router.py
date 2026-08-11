@@ -25,6 +25,10 @@ class FreeLLMProvider:
         return response.choices[0].message.content
 
 
+    def list_models(self):
+        models = self.client.models.list()
+        return [model.id for model in models.data]
+
 provider = FreeLLMProvider()
 messages = [
     {
@@ -33,3 +37,7 @@ messages = [
     }
 ]
 print(provider.generate(messages=messages, temperature=0.9))
+
+print(provider.list_models())
+
+
