@@ -36,6 +36,27 @@ class FreeLLMProvider:
         models = self.client.models.list()
         return [model.id for model in models.data]
 
+    def stream(
+        self,
+        messages: list[ChatCompletionMessageParam],
+        temperature: float = 0.5,
+        model: str = "bazaarlink-auto",
+    ):
+
+        stream = self.client.chat.completions.create(
+            model=model, messages=messages, temperature=temperature, stream=True
+        )
+
+        for chunk in stream:
+
+            if not chunk.choices:
+                continue
+
+            content = chunk.choices[0].delta.content
+
+            if content:
+                yield content
+
 
 provider = FreeLLMProvider()
 messages: list[ChatCompletionMessageParam] = [
@@ -44,6 +65,9 @@ messages: list[ChatCompletionMessageParam] = [
         "content": "Hello! Introduce yourself in one sentence.",
     }
 ]
-print(provider.generate(messages=messages, temperature=0.9))
+# print(provider.generate(messages=messages, temperature=0.9))
 
-print(provider.list_models())
+# print(provider.list_models())
+
+for chunk in provider.stream(messages=messages):
+    print(chunk, end="")
