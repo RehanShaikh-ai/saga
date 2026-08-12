@@ -1,8 +1,10 @@
 import os
+from collections.abc import Generator
+from typing import Any
 
 from dotenv import load_dotenv
-from openai import OpenAI
-from openai.types.chat import ChatCompletionMessageParam
+from openai import OpenAI, Stream
+from openai.types.chat import ChatCompletionChunk, ChatCompletionMessageParam
 
 
 class FreeLLMProvider:
@@ -41,9 +43,9 @@ class FreeLLMProvider:
         messages: list[ChatCompletionMessageParam],
         temperature: float = 0.5,
         model: str = "bazaarlink-auto",
-    ):
+    ) -> Generator[str, Any, None] :
 
-        stream = self.client.chat.completions.create(
+        stream: Stream[ChatCompletionChunk] = self.client.chat.completions.create(
             model=model, messages=messages, temperature=temperature, stream=True
         )
 
@@ -52,7 +54,7 @@ class FreeLLMProvider:
             if not chunk.choices:
                 continue
 
-            content = chunk.choices[0].delta.content
+            content: str | None = chunk.choices[0].delta.content
 
             if content:
                 yield content
@@ -62,7 +64,7 @@ provider = FreeLLMProvider()
 messages: list[ChatCompletionMessageParam] = [
     {
         "role": "user",
-        "content": "Hello! Introduce yourself in one sentence.",
+        "content": "explain yield in python",
     }
 ]
 # print(provider.generate(messages=messages, temperature=0.9))
@@ -71,3 +73,4 @@ messages: list[ChatCompletionMessageParam] = [
 
 for chunk in provider.stream(messages=messages):
     print(chunk, end="")
+print()
