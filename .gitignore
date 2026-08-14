@@ -6,3 +6,4 @@ logs/
 .pytest_cache/
 .vscode/
 .ruff_cache
+src/saga.egg-info

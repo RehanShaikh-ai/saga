@@ -64,13 +64,15 @@ provider = FreeLLMProvider()
 messages: list[ChatCompletionMessageParam] = [
     {
         "role": "user",
-        "content": "explain yield in python",
+        "content": "say hi",
     }
 ]
-# print(provider.generate(messages=messages, temperature=0.9))
 
-# print(provider.list_models())
+# if __name__=="__main__":
+#      print(provider.generate(messages=messages, temperature=0.9))
 
-for chunk in provider.stream(messages=messages):
-    print(chunk, end="")
-print()
+#      print(provider.list_models())
+
+#     for chunk in provider.stream(messages=messages):
+#         print(chunk, end="")
+#     print()
