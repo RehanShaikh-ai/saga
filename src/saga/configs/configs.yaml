@@ -1,0 +1,2 @@
+PROVIDER:
+  FREELLM_BASE_URL: "http://localhost:5173/v1"
