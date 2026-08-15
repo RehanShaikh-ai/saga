@@ -1,5 +1,8 @@
 import os
 from collections.abc import Generator
+from importlib.resources import files
+from importlib.resources.abc import Traversable
+from typing import Any
 
 import yaml
 from dotenv import load_dotenv
@@ -7,17 +10,18 @@ from openai import OpenAI, Stream
 from openai.types.chat import ChatCompletionChunk, ChatCompletionMessageParam
 
 load_dotenv()
-configs_file_path = "src/saga/configs/configs.yaml"
 
-if not os.path.isfile(configs_file_path):
-    raise FileNotFoundError(f"Configs couldnt be found at: {configs_file_path}")
+configs_path: Traversable = files("saga.configs") / "configs.yaml"
+
+if not configs_path.is_file():
+    raise FileNotFoundError(f"Configs couldnt be found at: {configs_path}")
 
 try:
-    with open("src/saga/configs/configs.yaml", "r") as file:
-        config = yaml.safe_load(file)
+    with configs_path.open("r", encoding="utf-8") as file:
+        config: dict[str, Any] = yaml.safe_load(file)
 
 except yaml.YAMLError as e:
-    raise yaml.YAMLError(f"Error loading configs: {e}")
+    raise ValueError(f"Error loading configs: {e}")
 
 
 class FreeLLMProvider:
@@ -45,10 +49,11 @@ class FreeLLMProvider:
             model=model, messages=messages, temperature=temperature
         )
 
-        if not response.choices[0].message.content:
+        content = response.choices[0].message.content
+        if not content:
             return None
 
-        return response.choices[0].message.content
+        return content
 
     def list_models(self) -> list[str]:
         models = self.client.models.list()
