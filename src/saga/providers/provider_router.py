@@ -6,7 +6,7 @@ from typing import Any
 
 import yaml
 from dotenv import load_dotenv
-from openai import OpenAI, Stream
+from openai import APIError, OpenAI, Stream
 from openai.types.chat import ChatCompletionChunk, ChatCompletionMessageParam
 
 if not load_dotenv():
@@ -51,9 +51,12 @@ class FreeLLMProvider:
         model: str = config["provider"]["default_model"],
     ) -> str | None:
 
-        response = self.client.chat.completions.create(
-            model=model, messages=messages, temperature=temperature
-        )
+        try:
+            response = self.client.chat.completions.create(
+                model=model, messages=messages, temperature=temperature
+            )
+        except APIError as e:
+            raise RuntimeError(f"LLM request failed {e}") from e
 
         content = response.choices[0].message.content
         if not content:
@@ -63,6 +66,9 @@ class FreeLLMProvider:
 
     def list_models(self) -> list[str]:
         models = self.client.models.list()
+        if not models.data:
+            raise RuntimeError("Failed to fetch model list.")
+
         return [model.id for model in models.data]
 
     def stream(
@@ -72,19 +78,23 @@ class FreeLLMProvider:
         model: str = config["provider"]["default_model"],
     ) -> Generator[str, None, None]:
 
-        stream: Stream[ChatCompletionChunk] = self.client.chat.completions.create(
-            model=model, messages=messages, temperature=temperature, stream=True
-        )
+        try:
+            stream: Stream[ChatCompletionChunk] = self.client.chat.completions.create(
+                model=model, messages=messages, temperature=temperature, stream=True
+            )
 
-        for chunk in stream:
+            for chunk in stream:
 
-            if not chunk.choices:
-                continue
+                if not chunk.choices:
+                    continue
 
-            content: str | None = chunk.choices[0].delta.content
+                content: str | None = chunk.choices[0].delta.content
 
-            if content:
-                yield content
+                if content:
+                    yield content
+
+        except APIError as e:
+            raise RuntimeError(f"LLM request failed {e}") from e
 
 
 # if __name__ == "__main__":
