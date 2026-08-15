@@ -34,15 +34,15 @@ class FreeLLMProvider:
             raise ValueError("FREELLMAPI_KEY environment variable is missing")
 
         self.client: OpenAI = OpenAI(
-            base_url=config["PROVIDER"]["FREELLM_BASE_URL"],
+            base_url=config["provider"]["freellm_base_url"],
             api_key=self.api_key,
         )
 
     def generate(
         self,
         messages: list[ChatCompletionMessageParam],
-        temperature: float = 0.5,
-        model: str = "bazaarlink-auto",
+        temperature: float = config["provider"]['default_temperature'],
+        model: str = config["provider"]['default_model'],
     ) -> str | None:
 
         response = self.client.chat.completions.create(
@@ -62,8 +62,8 @@ class FreeLLMProvider:
     def stream(
         self,
         messages: list[ChatCompletionMessageParam],
-        temperature: float = 0.5,
-        model: str = "bazaarlink-auto",
+        temperature: float = config["provider"]['default_temperature'],
+        model: str = config["provider"]['default_model'],
     ) -> Generator[str, None, None]:
 
         stream: Stream[ChatCompletionChunk] = self.client.chat.completions.create(
@@ -91,10 +91,10 @@ if __name__ == "__main__":
         }
     ]
 
-    print(provider.generate(messages=messages, temperature=0.9))
+    # print(provider.generate(messages=messages, temperature=0.9))
 
     print(provider.list_models())
 
-    for chunk in provider.stream(messages=messages):
-        print(chunk, end="")
-    print()
+    # for chunk in provider.stream(messages=messages):
+    #     print(chunk, end="")
+    # print()

@@ -1,2 +1,4 @@
-PROVIDER:
-  FREELLM_BASE_URL: "http://localhost:5173/v1"
+provider:
+  freellm_base_url: "http://localhost:5173/v1"
+  default_model: "bazaarlink-auto"
+  default_temperature: 0.5
